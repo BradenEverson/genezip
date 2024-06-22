@@ -8,7 +8,9 @@ GeneZip is a Rust command-line tool designed to compress files containing string
 - Decompress files compressed with GeneZip
 - Simple and intuitive command-line interface
 
-## Installation
+<!--Not yet implemented-->
+
+<!--## Installation
 
 To install GeneZip, you need to have Rust and Cargo installed on your machine. If you don't have them installed, you can get them from [rust-lang.org](https://www.rust-lang.org/).
 
@@ -74,4 +76,4 @@ Contributions are welcome! If you have suggestions for improvements or new featu
 
 ## License
 
-GeneZip is licensed under the MIT License. See the [LICENSE](LICENSE) file for more information.
+GeneZip is licensed under the MIT License. See the [LICENSE](LICENSE) file for more information. --> 
