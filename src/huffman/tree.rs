@@ -1,7 +1,7 @@
-use std::{borrow::Borrow, cell::RefCell, collections::{BinaryHeap, HashMap}, hash::Hash, rc::Rc};
+use std::{borrow::Borrow, cell::{Ref, RefCell}, collections::{BinaryHeap, HashMap}, hash::Hash, rc::Rc};
 
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Node<V> {
     pub(crate) freq: usize,
     pub(crate) value: Option<V>,
@@ -68,19 +68,72 @@ impl<V> Eq for Node<V> {}
 
 pub struct HuffmanTree<V: Eq + Hash + Copy> {
     root: HuffmanNode<V>,
-    frequencies: HashMap<V, usize>
+    encodings: HashMap<V, Vec<bool>>
 }
 
-impl<V: Eq + Hash + Copy> HuffmanTree<V> {
+impl<V: Eq + Hash + Copy + Clone> HuffmanTree<V> {
 
     pub fn from_data(from: &[V]) -> Self {
         let freq = Self::create_frequency_table(from);
         let huffman = Self::create_huffman(&freq);
 
+        let mut encodings = HashMap::new();
+        Self::generate_codes(huffman.clone(), &mut encodings, vec![]);
+
         Self {
             root: huffman.unwrap(),
-            frequencies: freq
+            encodings
         }
+    }
+
+    pub fn encodings_to(&self, to: &V) -> Option<&Vec<bool>> {
+        self.encodings.get(to)
+    }
+
+    pub fn get_to(&self, directions: Vec<bool>) -> Result<V> {
+        let mut curr_node: Option<HuffmanNode<V>> = Some(self.root.clone());
+
+        for direction in directions {
+            //false -> 0 -> left
+            //true -> 1 -> right
+            if let Some(node) = curr_node {
+                let node_borrowed: Ref<Node<V>> = (*node).borrow();
+                curr_node = match direction {
+                    true => node_borrowed.right.clone(),
+                    false => node_borrowed.left.clone(),
+                }
+            }
+        }
+
+        return match curr_node {
+            Some(node) => {
+                let node_borrowed: Ref<Node<V>> = (*node).borrow();
+                if let Some(val) = node_borrowed.value {
+                    Ok(val)
+                } else {
+                    Err(HuffmanError::InvalidHuffmanEncodingError)
+                }
+            },
+            None => Err(HuffmanError::InvalidHuffmanEncodingError)
+        }
+    }
+    
+    fn generate_codes(local_root: Option<HuffmanNode<V>>, map: &mut HashMap<V, Vec<bool>>, curr_directions: Vec<bool>) {
+        if let Some(huff_node) = local_root {
+            let borrowed_node: Ref<Node<V>> = (*huff_node).borrow();
+            if let Some(val) = borrowed_node.value {
+                map.insert(val, curr_directions.clone());
+            }
+            let mut left = curr_directions.clone();
+            let mut right = curr_directions.clone();
+
+            left.push(false);
+            right.push(true);
+            //Continue traveling down huff tree
+            Self::generate_codes(borrowed_node.left.clone(), map, left);
+            Self::generate_codes(borrowed_node.right.clone(), map, right);
+        }
+
     }
 
     fn create_huffman(freq_table: &HashMap<V, usize>) -> Option<HuffmanNode<V>> {
@@ -111,3 +164,11 @@ impl<V: Eq + Hash + Copy> HuffmanTree<V> {
         res
     }
 }
+
+#[derive(thiserror::Error, Debug)]
+pub enum HuffmanError {
+    #[error("Directions led to a dead end")]
+    InvalidHuffmanEncodingError
+}
+
+pub type Result<T> = std::result::Result<T, HuffmanError>;
