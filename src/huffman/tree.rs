@@ -1,7 +1,9 @@
-use std::{borrow::Borrow, cell::{Ref, RefCell}, collections::{BinaryHeap, HashMap}, hash::Hash, rc::Rc};
+use std::{borrow::Borrow, cell::{Ref, RefCell}, collections::{BinaryHeap, HashMap}, fs::File, hash::Hash, path::PathBuf, rc::Rc};
+
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 struct Node<V> {
     pub(crate) freq: usize,
     pub(crate) value: Option<V>,
@@ -11,7 +13,7 @@ struct Node<V> {
 
 type HuffmanNode<V> = Rc<RefCell<Node<V>>>;
 
-impl<V> Node<V> {
+impl<V: Serialize + DeserializeOwned> Node<V> {
     pub fn new(freq: usize, value: Option<V>) -> Self {
         Self {
             freq,
@@ -20,6 +22,7 @@ impl<V> Node<V> {
             right: None
         }
     }
+
 
     pub fn new_branch(freq: usize, value: Option<V>) -> HuffmanNode<V> {
         let node = Self::new(freq, value);
@@ -66,12 +69,26 @@ impl<V> PartialEq for Node<V> {
 
 impl<V> Eq for Node<V> {}
 
-pub struct HuffmanTree<V: Eq + Hash + Copy> {
+#[derive(Serialize, Deserialize)]
+pub struct HuffmanTree<V: Eq + Hash> {
     root: HuffmanNode<V>,
     encodings: HashMap<V, Vec<bool>>
 }
 
-impl<V: Eq + Hash + Copy + Clone> HuffmanTree<V> {
+impl<V: Eq + Hash + Clone + Serialize + DeserializeOwned> HuffmanTree<V> {
+    pub fn to_json(&self, to: String) -> std::io::Result<()> {
+        let file_write = File::create(to)?;
+        serde_json::to_writer(file_write, self)?;
+
+        Ok(())
+    }
+
+    pub fn from_json(from: PathBuf) -> std::io::Result<Self> {
+        let file = File::open(from)?;
+        let res = serde_json::from_reader(file)?;
+
+        Ok(res)
+    }
 
     pub fn from_data(from: &[V]) -> Self {
         let freq = Self::create_frequency_table(from);
@@ -84,6 +101,10 @@ impl<V: Eq + Hash + Copy + Clone> HuffmanTree<V> {
             root: huffman.unwrap(),
             encodings
         }
+    }
+
+    pub fn from_tokens(source: &[V], tokens: &[&[V]]) -> Self {
+        todo!();
     }
 
     pub fn encodings_to(&self, to: &V) -> Option<&Vec<bool>> {
@@ -108,7 +129,7 @@ impl<V: Eq + Hash + Copy + Clone> HuffmanTree<V> {
         return match curr_node {
             Some(node) => {
                 let node_borrowed: Ref<Node<V>> = (*node).borrow();
-                if let Some(val) = node_borrowed.value {
+                if let Some(val) = node_borrowed.value.clone() {
                     Ok(val)
                 } else {
                     Err(HuffmanError::InvalidHuffmanEncodingError)
@@ -121,7 +142,7 @@ impl<V: Eq + Hash + Copy + Clone> HuffmanTree<V> {
     fn generate_codes(local_root: Option<HuffmanNode<V>>, map: &mut HashMap<V, Vec<bool>>, curr_directions: Vec<bool>) {
         if let Some(huff_node) = local_root {
             let borrowed_node: Ref<Node<V>> = (*huff_node).borrow();
-            if let Some(val) = borrowed_node.value {
+            if let Some(val) = borrowed_node.value.clone() {
                 map.insert(val, curr_directions.clone());
             }
             let mut left = curr_directions.clone();
@@ -139,7 +160,7 @@ impl<V: Eq + Hash + Copy + Clone> HuffmanTree<V> {
     fn create_huffman(freq_table: &HashMap<V, usize>) -> Option<HuffmanNode<V>> {
         let mut heap = BinaryHeap::new();
 
-        for (&val, &freq) in freq_table {
+        for (val, freq) in freq_table.clone() {
             heap.push(Node::new_branch(freq, Some(val)));
         }
 
@@ -158,7 +179,7 @@ impl<V: Eq + Hash + Copy + Clone> HuffmanTree<V> {
         let mut res = HashMap::new();
         
         for elem in from {
-            *res.entry(*elem).or_insert(0) += 1;
+            *res.entry(elem.clone()).or_insert(0) += 1;
         }
             
         res
