@@ -29,9 +29,9 @@ impl GeneZipper {
                     target: target_file
                 })
             },
-            GeneZipCommands::Uncompress { target, key, output } => {
+            GeneZipCommands::Uncompress { target, key, output: _ } => {
                 let target_file = File::open(target.clone())?;
-                let huffman = HuffmanTree::from_json(target)?;
+                let huffman = HuffmanTree::from_json(key)?;
 
 
                 Ok(Self {
