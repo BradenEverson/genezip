@@ -5,6 +5,6 @@ fn main() {
     let tree = HuffmanTree::from_data(&text);
 
     for elem in text {
-        println!("How to get to {} in tree: \n{:?}", elem, tree.encodings_to(&elem));
+        println!("{} -{:?}-> {}", elem, tree.encodings_to(&elem), tree.get_to(tree.encodings_to(&elem).unwrap().clone()).unwrap());
     }
 }
