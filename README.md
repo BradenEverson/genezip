@@ -32,6 +32,8 @@ To compress a file, use the `compress` command followed by the input file and th
 genezip compress <input_file> <output_file>
 ```
 
+Compressing will create your desired compression file, alongside a serialized `key` that holds the encodings necessary to decompress the genmoe file
+
 **Example:**
 
 ```
@@ -40,16 +42,16 @@ genezip compress sequences.txt sequences.gzp
 
 ### Decompress
 
-To decompress a file, use the `decompress` command followed by the compressed file and the desired output file:
+To decompress a file, use the `decompress` command followed by the compressed file, the generated .gzpky key created from compressing and the desired output file:
 
 ```
-genezip decompress <input_file> <output_file>
+genezip decompress <input_file> <key_file> <output_file>
 ```
 
 **Example:**
 
 ```
-genezip decompress sequences.gzp sequences.txt
+genezip decompress sequences.gzp sequences.gzpky sequences.txt
 ```
 
 ## Example
@@ -67,7 +69,7 @@ genezip compress genetic_data.txt genetic_data.gzp
 To decompress the previously compressed file `genetic_data.gzp`, run:
 
 ```
-genezip decompress genetic_data.gzp genetic_data_decompressed.txt
+genezip decompress genetic_data.gzp genetic_data.gzpky genetic_data_decompressed.txt
 ```
 
 ## Contributing

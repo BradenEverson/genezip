@@ -1,10 +1,22 @@
-use genezip::huffman::tree::HuffmanTree;
+use clap::Parser;
+use genezip::zip::{GeneZipError, GeneZipper, GeneZipperArgs};
 
-fn main() {
-    let text = "ATGCCCGTAGCGCGCGCCCCATATAT".chars().collect::<Vec<char>>();
-    let tree = HuffmanTree::from_data(&text);
+fn main() -> Result<(), genezip::zip::GeneZipError> {
+    let args = GeneZipperArgs::parse();
+    let mut genezipper = GeneZipper::new(args)?;
 
-    for elem in text {
-        println!("{} -{:?}-> {}", elem, tree.encodings_to(&elem), tree.get_to(tree.encodings_to(&elem).unwrap().clone()).unwrap());
+    match genezipper.process() {
+        Ok(_) => {
+            println!("Your file was processed sucessfully!!");
+        }, 
+        Err(error) => {
+            match error {
+                GeneZipError::HuffmanError(h_err) => println!("Error generating huffman encoding file: \n{}", h_err),
+                GeneZipError::IoError(io_err) => println!("Error reading or writing to file: \n{}", io_err),
+                GeneZipError::SerialzeError(serde_err) => println!("Error serializing file: \n{}", serde_err),
+            }
+        }
     }
+
+    Ok(())
 }
