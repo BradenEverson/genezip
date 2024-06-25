@@ -4,13 +4,11 @@ GeneZip is a Rust command-line tool designed to compress files containing string
 
 ## Features
 
-- Compress genetic information files using Huffman encoding
+- Compress genetic information files using Huffman encoding and run-length-tokenized encoding(in development!)
 - Decompress files compressed with GeneZip
 - Simple and intuitive command-line interface
 
-<!--Not yet implemented-->
-
-<!--## Installation
+## Installation
 
 To install GeneZip, you need to have Rust and Cargo installed on your machine. If you don't have them installed, you can get them from [rust-lang.org](https://www.rust-lang.org/).
 
@@ -21,6 +19,8 @@ cargo install genezip
 ```
 
 ## Usage
+
+**Note** GeneZip is currently in an extremely beta phase. Huffman encoding is currently implemented, but without sequence-based-token encoding and run-based encoding it will always create larger files than before. GeneZip is being continuously updated and will receieve these features soon!
 
 GeneZip provides two main commands: `compress` and `decompress`.
 
@@ -69,7 +69,7 @@ genezip compress genetic_data.txt genetic_data.gzp
 To decompress the previously compressed file `genetic_data.gzp`, run:
 
 ```
-genezip decompress genetic_data.gzp genetic_data.gzpky genetic_data_decompressed.txt
+genezip decompress genetic_data.gzp genetic_data.gzp.gzpky genetic_data_decompressed.txt
 ```
 
 ## Contributing
@@ -78,4 +78,4 @@ Contributions are welcome! If you have suggestions for improvements or new featu
 
 ## License
 
-GeneZip is licensed under the MIT License. See the [LICENSE](LICENSE) file for more information. --> 
+GeneZip is licensed under the MIT License. See the [LICENSE](LICENSE) file for more information. 
