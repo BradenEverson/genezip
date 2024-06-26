@@ -1,4 +1,5 @@
 # GeneZip 🧬
+[![crates.io](https://img.shields.io/crates/v/genezip.svg)](https://crates.io/crates/genezip)
 
 GeneZip is a Rust command-line tool designed to compress files containing strings of genetic information using Huffman encoding. Huffman encoding is an efficient method for compressing data by assigning variable-length codes to input characters based on their frequencies.
 
